@@ -1,0 +1,13 @@
+[package]
+name = "lfuzz"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+nix = "0.24.1"
+libc = "0.2.125"
+rand = "0.8.5"
+x11 = "2.19.1"
