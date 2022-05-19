@@ -1,3 +1,3 @@
 # lfuzz
 
-**Simple Linux GUI fuzzer**
+**~~Dumb~~ Simple Linux GUI fuzzer**
