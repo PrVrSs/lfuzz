@@ -4,6 +4,7 @@ use rand::Rng;
 use clap::Parser;
 use x11::keysym;
 use lfuzz::app::App;
+use lfuzz::statistics::Statistics;
 
 
 fn black_list() -> HashSet<c_uint>{
@@ -17,8 +18,8 @@ fn black_list() -> HashSet<c_uint>{
 
 
 fn fuzz(app: App, blacklist: HashSet<c_uint>, pred: u32) {
-    let mut count = 0u32;
     let mut rng = rand::thread_rng();
+    let mut stats = Statistics::default();
 
     loop {
         let rand_value = rng.gen::<u16>() as u32;
@@ -27,15 +28,18 @@ fn fuzz(app: App, blacklist: HashSet<c_uint>, pred: u32) {
         }
 
         std::thread::sleep(std::time::Duration::new(0, 500));
-        count += 1;
 
-        println!("key press {:#x}", rand_value);
+        stats.count += 1;
+        stats.unique_keys.insert(rand_value);
+
         app.press(rand_value as c_ulong);
 
-        if count == pred {
+        if stats.count == pred {
             break;
         }
     }
+
+    println!("{:?}", stats);
 }
 
 
@@ -59,7 +63,12 @@ fn main() {
     app.activate();
 
     let mut blacklist = black_list();
-    for key in 0x4a1..=0xffff {
+
+    for key in 0x0..=0x22 {
+        blacklist.insert(key);
+    }
+
+    for key in 0x7f..=0xffff {
         blacklist.insert(key);
     }
 

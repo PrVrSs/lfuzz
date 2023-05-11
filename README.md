@@ -1,6 +1,6 @@
-# lfuzz - WIP
+# lfuzz
 
-**~~Dumb~~ Simple Linux GUI fuzzer**
+**Simple Linux GUI fuzzer**
 
 
 ```
