@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::mem;
 use std::ffi::{CString, c_void, CStr};
-use libc::{c_char, c_uchar, c_ulong, c_uint};
+use libc::{c_char, c_uchar, c_ulong, c_uint, c_long};
 use x11::xlib;
 use x11::xtest;
 use crate::error::{Result, Error};
@@ -131,6 +131,55 @@ impl App {
 
             xtest::XTestFakeKeyEvent(self.dpy, key_code, xlib::True, 0);
             xtest::XTestFakeKeyEvent(self.dpy, key_code, xlib::False, 0);
+        }
+    }
+
+    pub fn move_cursor(&self) {
+        unsafe {
+            xtest::XTestFakeMotionEvent(self.dpy,0, 100, 200, 3);
+        }
+    }
+
+    pub fn click(&self) {
+        unsafe {
+            xtest::XTestFakeButtonEvent(self.dpy, 3, xlib::True, 3);
+            xtest::XTestFakeButtonEvent(self.dpy, 3, xlib::False, 3);
+        }
+    }
+
+    pub fn close(&self) {
+        let wm_protocols = CString::new("WM_PROTOCOLS").unwrap();
+        let wm_delete_window = CString::new("WM_DELETE_WINDOW").unwrap();
+
+        let mut event = unsafe {
+            let mut data = xlib::ClientMessageData::new();
+            data.set_long(
+                0,
+                xlib::XInternAtom(
+                    self.dpy,
+                    wm_delete_window.as_ptr() as *const c_char,
+                    xlib::False,
+                ) as c_long
+            );
+            data.set_long(1, 3);
+
+            xlib::XEvent {
+                client_message: xlib::XClientMessageEvent {
+                    type_: xlib::ClientMessage,
+                    serial: 0,
+                    send_event: xlib::False,
+                    display: self.dpy,
+                    window: self.window,
+                    message_type: xlib::XInternAtom(
+                        self.dpy, wm_protocols.as_ptr() as *const c_char, xlib::True),
+                    format: 32,
+                    data,
+                }
+            }
+        };
+
+        unsafe {
+            xlib::XSendEvent(self.dpy, self.window, xlib::False, xlib::NoEventMask, &mut event );
         }
     }
 
